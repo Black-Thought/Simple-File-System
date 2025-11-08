@@ -1,26 +1,9 @@
-```markdown
 # 🧱 Simple File System (SFS)
 
 A lightweight, educational implementation of a **simple file system** written in **C++**, operating on a **virtual disk** stored as a regular file.  
 This project demonstrates how a file system works internally — including **superblocks, inodes, block management, mounting, and data read/write operations** — all simulated at the user level.
 
 ---
-
-## 📘 Table of Contents
-- [Overview](#overview)
-- [Architecture](#architecture)
-- [Disk Layout](#disk-layout)
-- [Core Structures](#core-structures)
-- [Features](#features)
-- [Build & Run](#build--run)
-- [Shell Commands](#shell-commands)
-- [Visualization Tool](#visualization-tool)
-- [Testing](#testing)
-- [Future Improvements](#future-improvements)
-- [Contributors](#contributors)
-
----
-
 ## 🧭 Overview
 
 The **Simple File System (SFS)** simulates a real file system inside a **virtual disk image** (`disk0.img`) divided into fixed-size 4KB blocks.  
@@ -32,8 +15,6 @@ This project was built to help understand how data is organized and managed at t
 
 ## 🧩 Architecture
 
-```
-
 User Commands (Shell)
 ↓
 File System Layer (fs.cpp)
@@ -41,8 +22,6 @@ File System Layer (fs.cpp)
 Disk Interface Layer (disk.cpp)
 ↓
 Virtual Disk File (disk0.img)
-
-```
 
 | Layer | Description | Files |
 |--------|--------------|-------|
@@ -58,14 +37,13 @@ Virtual Disk File (disk0.img)
 Each disk image is divided into 4KB blocks.  
 The layout of blocks inside the virtual disk is as follows:
 
-```
-
 +-----------+-------------------+------------------+
+
 | Block 0   | Blocks 1..N       | Remaining Blocks |
-| Superblock| Inode Blocks      | Data Blocks      |
-+-----------+-------------------+------------------+
 
-````
+| Superblock| Inode Blocks      | Data Blocks      |
+
++-----------+-------------------+------------------+
 
 | Section | Purpose |
 |----------|----------|
@@ -78,14 +56,13 @@ The layout of blocks inside the virtual disk is as follows:
 ## ⚙️ Core Structures
 
 ### 🧭 SuperBlock
-```cpp
+
 struct SuperBlock {
   uint32_t MagicNumber;  // Unique FS identifier
   uint32_t Blocks;       // Total number of blocks
   uint32_t InodeBlocks;  // Number of blocks reserved for inodes
   uint32_t Inodes;       // Total number of inodes
 };
-````
 
 ### 📂 Inode
 
@@ -114,12 +91,19 @@ Supports **5 direct** + **1 indirect** block pointers (→ up to ~4 MB per file)
 ## 🌟 Features
 
 ✅ Simulated block-based virtual disk
+
 ✅ File creation, deletion, reading, and writing
+
 ✅ File system formatting and mounting
+
 ✅ Direct and indirect block addressing
+
 ✅ Free block map reconstruction during mount
+
 ✅ Built-in shell interface
+
 ✅ Web-based visualization tool
+
 ✅ Comprehensive test scripts
 
 ---
@@ -225,16 +209,6 @@ make test
 
 ---
 
-## 🔍 Future Improvements
-
-* 🗂️ Add hierarchical directory structure
-* 🔒 Add permissions and timestamps
-* 📁 Multi-level indirection for larger files
-* ⚡ Implement journaling for crash recovery
-* 🧠 Introduce block caching for faster performance
-
----
-
 ## 👥 Contributors
 
 **Project:** Simple File System
@@ -252,5 +226,3 @@ This project demonstrates the **fundamental workings of a file system**, includi
 It provides a practical foundation for understanding how real operating systems manage persistent storage.
 
 > “From raw bytes to structured files — building a file system from scratch reveals the hidden world inside every hard drive.”
-
-```
