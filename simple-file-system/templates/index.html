@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Simple File System Visualizer</title>
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<style>
+/* 🌈 Modern UI look */
+body {
+  font-family: 'Segoe UI', Tahoma, sans-serif;
+  background: linear-gradient(145deg, #1e293b, #334155);
+  color: #f8fafc;
+  margin: 0;
+  padding: 0;
+  text-align: center;
+}
+
+h1 {
+  font-weight: 600;
+  margin: 20px 0 5px;
+}
+
+nav {
+  margin-bottom: 15px;
+}
+
+button {
+  background: #2563eb;
+  color: #fff;
+  border: none;
+  padding: 8px 16px;
+  margin: 4px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: 0.2s;
+}
+
+button:hover {
+  background: #1d4ed8;
+}
+
+#viz, #graph {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin: 10px auto;
+  max-width: 900px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+  padding: 10px;
+}
+
+.block {
+  width: 24px;
+  height: 24px;
+  margin: 2px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+.block:hover { transform: scale(1.2); }
+
+/* Color palette */
+.super { background:#ef4444; }       /* red   */
+.inode { background:#f59e0b; }       /* amber */
+.data_used { background:#22c55e; }   /* green */
+.indirect { background:#3b82f6; }    /* blue  */
+.data_free { background:#94a3b8; }   /* gray  */
+
+.tooltip {
+  position:absolute;
+  background:#f8fafc;
+  color:#0f172a;
+  border:1px solid #94a3b8;
+  padding:4px 8px;
+  border-radius:6px;
+  font-size:12px;
+  pointer-events:none;
+}
+
+svg {
+  width: 1000px;
+  height: 550px;
+  margin: auto;
+  display: block;
+  background: rgba(255,255,255,0.05);
+  border-radius: 10px;
+}
+
+line { stroke: #cbd5e1; stroke-width: 1.5px; }
+circle { stroke: #0f172a; stroke-width: 1px; }
+
+#file-table {
+  width: 70%;
+  margin: 20px auto;
+  border-collapse: collapse;
+  background: rgba(255, 255, 255, 0.07);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+#file-table th, #file-table td {
+  border: 1px solid rgba(255,255,255,0.1);
+  padding: 8px 12px;
+  font-size: 14px;
+}
+
+#file-table th {
+  background: rgba(255,255,255,0.15);
+}
+</style>
+</head>
+<body>
+<h1>🧩 Simple File System Visualizer</h1>
+<nav>
+  <button id="btn-map">Disk Map</button>
+  <button id="btn-graph">Inode Graph</button>
+</nav>
+<div id="viz"></div>
+<svg id="graph" style="display:none"></svg>
+<div id="tooltip" class="tooltip" style="opacity:0"></div>
+
+<!-- Table -->
+<table id="file-table" style="display:none;">
+  <thead>
+    <tr><th>Inode</th><th>File Name</th><th>Size (bytes)</th><th>Allocated Blocks</th></tr>
+  </thead>
+  <tbody id="file-tbody"></tbody>
+</table>
+<!-- Load D3.js -->
+<script src="https://d3js.org/d3.v7.min.js"></script>
+
+<script>
+const tooltip = d3.select("#tooltip");
+
+function showTooltip(evt, text){
+  tooltip.transition().duration(100).style("opacity",1);
+  tooltip.html(text)
+    .style("left",(evt.pageX+10)+"px")
+    .style("top",(evt.pageY-20)+"px");
+}
+function hideTooltip(){tooltip.transition().duration(200).style("opacity",0);}
+
+d3.json("/data").then(data=>{
+  console.log("Loaded data:", data);
+
+  if(data.error){
+    d3.select("#viz").append("p").text("Error: "+data.error);
+    return;
+  }
+
+  // === Disk Map ===
+  const viz = d3.select("#viz");
+  viz.selectAll(".block")
+    .data(data.blocks)
+    .enter().append("div")
+    .attr("class",d=>"block "+d.type)
+    .on("mouseover",(e,d)=>showTooltip(e,`Block ${d.id}<br>Type: ${d.type}`))
+    .on("mouseout",hideTooltip);
+
+  // === Graph (avoids clipping) ===
+  const nodes=[], links=[];
+  data.blocks.forEach(b=>{
+    if(["inode","data_used","indirect"].includes(b.type))
+      nodes.push({id:b.id,type:b.type});
+  });
+  for(let i=0;i<nodes.length;i++){
+    if(nodes[i].type==="inode"){
+      for(let j=i+1;j<i+4 && j<nodes.length;j++){
+        if(nodes[j].type!=="inode")
+          links.push({source:nodes[i].id,target:nodes[j].id});
+      }
+    }
+  }
+
+  const svg=d3.select("#graph");
+  const color=d=>({
+    super:"#ef4444",inode:"#f59e0b",data_used:"#22c55e",indirect:"#3b82f6",data_free:"#94a3b8"
+  }[d.type]||"#999");
+
+  const sim=d3.forceSimulation(nodes)
+    .force("link",d3.forceLink(links).id(d=>d.id).distance(100))
+    .force("charge",d3.forceManyBody().strength(-300))
+    .force("center",d3.forceCenter(500,275));
+
+  const link=svg.append("g").selectAll("line")
+    .data(links).enter().append("line");
+
+  const node=svg.append("g").selectAll("circle")
+    .data(nodes).enter().append("circle")
+    .attr("r",12).attr("fill",d=>color(d))
+    .on("mouseover",(e,d)=>showTooltip(e,`Block ${d.id}<br>Type: ${d.type}`))
+    .on("mouseout",hideTooltip)
+    .call(d3.drag()
+      .on("start",(e,d)=>{if(!e.active)sim.alphaTarget(0.3).restart();d.fx=d.x;d.fy=d.y;})
+      .on("drag",(e,d)=>{d.fx=e.x;d.fy=e.y;})
+      .on("end",(e,d)=>{if(!e.active)sim.alphaTarget(0);d.fx=null;d.fy=null;}));
+
+  sim.on("tick",()=>{
+    link.attr("x1",d=>d.source.x).attr("y1",d=>d.source.y)
+        .attr("x2",d=>d.target.x).attr("y2",d=>d.target.y);
+    node.attr("cx",d=>d.x).attr("cy",d=>d.y);
+  });
+
+  // === Real File Table ===
+  const files = data.files;
+  const tbody = d3.select("#file-tbody");
+  tbody.selectAll("tr").remove();
+
+  files.forEach(f=>{
+    tbody.append("tr").html(
+      `<td>${f.inode}</td>
+       <td>${f.name}</td>
+       <td>${f.size}</td>
+       <td>${f.blocks_str}</td>`
+    );
+  });
+
+  // === Buttons ===
+  d3.select("#btn-map").on("click",()=>{
+    d3.select("#viz").style("display","flex");
+    d3.select("#graph").style("display","none");
+    d3.select("#file-table").style("display","none");
+  });
+  d3.select("#btn-graph").on("click",()=>{
+    d3.select("#viz").style("display","none");
+    d3.select("#graph").style("display","block");
+    d3.select("#file-table").style("display","table");
+  });
+});
+</script>
+</body>
+</html>
