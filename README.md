@@ -1,10 +1,10 @@
-# 🧱 Simple File System (SFS)
+# Simple File System (SFS)
 
 A lightweight, educational implementation of a **simple file system** written in **C++**, operating on a **virtual disk** stored as a regular file.  
 This project demonstrates how a file system works internally — including **superblocks, inodes, block management, mounting, and data read/write operations** — all simulated at the user level.
 
 ---
-## 🧭 Overview
+## Overview
 
 The **Simple File System (SFS)** simulates a real file system inside a **virtual disk image** (`disk0.img`) divided into fixed-size 4KB blocks.  
 It provides a complete environment to **format**, **mount**, **create**, **read**, **write**, and **remove** files — just like a real operating system.
@@ -13,7 +13,7 @@ This project was built to help understand how data is organized and managed at t
 
 ---
 
-## 🧩 Architecture
+## Architecture
 
 User Commands (Shell)
 ↓
@@ -32,7 +32,7 @@ Virtual Disk File (disk0.img)
 
 ---
 
-## 💾 Disk Layout
+## Disk Layout
 
 Each disk image is divided into 4KB blocks.  
 The layout of blocks inside the virtual disk is as follows:
@@ -53,9 +53,9 @@ The layout of blocks inside the virtual disk is as follows:
 
 ---
 
-## ⚙️ Core Structures
+## Core Structures
 
-### 🧭 SuperBlock
+### SuperBlock
 
 struct SuperBlock {
   uint32_t MagicNumber;  // Unique FS identifier
@@ -64,7 +64,7 @@ struct SuperBlock {
   uint32_t Inodes;       // Total number of inodes
 };
 
-### 📂 Inode
+### Inode
 
 ```cpp
 struct Inode {
@@ -75,7 +75,7 @@ struct Inode {
 };
 ```
 
-### 🧱 IndirectBlock
+### IndirectBlock
 
 ```cpp
 struct IndirectBlock {
@@ -88,7 +88,7 @@ Supports **5 direct** + **1 indirect** block pointers (→ up to ~4 MB per file)
 
 ---
 
-## 🌟 Features
+## Features
 
 ✅ Simulated block-based virtual disk
 
@@ -108,22 +108,22 @@ Supports **5 direct** + **1 indirect** block pointers (→ up to ~4 MB per file)
 
 ---
 
-## 🏗️ Build & Run
+## Build & Run
 
-### 🧰 Prerequisites
+### Prerequisites
 
 * Linux environment
 * GCC / Clang (C++11+)
 * Python 3 (for visualization)
 * `make` build tool
 
-### 🔧 Build
+### Build
 
 ```bash
 make
 ```
 
-### ▶️ Run the File System Shell
+### Run the File System Shell
 
 ```bash
 ./bin/sfssh disk0.img 64
@@ -133,7 +133,7 @@ Creates or opens a virtual disk of 64 blocks and starts the interactive shell.
 
 ---
 
-## 💻 Shell Commands
+## Shell Commands
 
 | Command                             | Description                                                       |
 | ----------------------------------- | ----------------------------------------------------------------- |
@@ -150,7 +150,7 @@ Creates or opens a virtual disk of 64 blocks and starts the interactive shell.
 | `cat <ino>`                         | Print file contents                                               |
 | `exit` / `quit`                     | Exit the shell                                                    |
 
-### 🧩 Example Session
+### Example Session
 
 ```bash
 ./bin/sfssh disk0.img 64
@@ -165,19 +165,19 @@ remove 0
 
 ---
 
-## 🌐 Visualization Tool
+## Visualization Tool
 
 **Files:** `visualize_web.py`, `templates/index.html`
 **Technology:** Flask (backend) + D3.js (frontend)
 
-### ▶️ Run the Visualizer
+### Run the Visualizer
 
 ```bash
 python3 visualize_web.py
 ```
 
 Then open your browser at:
-👉 [http://localhost:5000](http://localhost:5000)
+ [http://localhost:5000](http://localhost:5000)
 
 **Displays:**
 
@@ -188,11 +188,11 @@ Then open your browser at:
 
 ---
 
-## 🧪 Testing
+## Testing
 
 The `tests/` folder includes shell scripts to automatically verify all major features.
 
-### ▶️ Run All Tests
+### Run All Tests
 
 ```bash
 make test
@@ -209,7 +209,7 @@ make test
 
 ---
 
-## 👥 Contributors
+## Contributors
 
 **Project:** Simple File System
 **Author(s):** [Black-Thought](https://github.com/Black-Thought) and Team
@@ -220,7 +220,7 @@ make test
 
 ---
 
-## 🏁 Summary
+## Summary
 
 This project demonstrates the **fundamental workings of a file system**, including block-level storage, metadata management, and file I/O operations.
 It provides a practical foundation for understanding how real operating systems manage persistent storage.
